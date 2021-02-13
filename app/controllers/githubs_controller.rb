@@ -2,26 +2,7 @@ class GithubsController < ApplicationController
   before_action :validate_github
 
   def create
-    if github_params['action'] == 'opened' || (
-    github_params['action'] == 'edited' &&
-        Author.find_by(github_issue_id: github_params['issue']['number']).nil?
-    )
-      if Author.find_by(github_issue_id: github_params['issue']['number']).nil?
-        author = Author.create(
-          github_issue_id: github_params['issue']['number'],
-          name: github_params['issue']['title'],
-          bio: github_params['issue']['body']
-        )
-        Book.create(title: 'El primer libro maravilloso', price: 10, author: author, publisher: author)
-      end
-    elsif github_params['action'] == 'edited'
-      author = Author.find_by github_issue_id: github_params['issue']['number']
-      author.update_attributes name: github_params['issue']['title'], bio: github_params['issue']['body']
-    elsif github_params['action'] == 'deleted'
-      author = Author.find_by github_issue_id: github_params['issue']['number']
-      author.books.each(&:destroy)
-      author.destroy
-    end
+    GithubAuthorSyncService.new(github_params).sync_author
     head :ok
   end
 
