@@ -31,9 +31,12 @@ class GithubAuthorSyncService
   end
 
   def handle_deleted
+    return if author.nil?
+
     author.books.each(&:destroy)
     author.destroy
   end
+
   FIRST_BOOK_TITLE = 'El primer libro maravilloso'.freeze
   FIRST_BOOK_PRICE = 10
   def create_author
